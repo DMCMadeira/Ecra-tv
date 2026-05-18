@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DMC Madeira — Ecrã Receção</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0c0e;
+    --surface: #111416;
+    --surface2: #181c1f;
+    --border: #232729;
+    --border2: #2d3235;
+    --text: #e8eaec;
+    --muted: #6b7278;
+    --muted2: #454c52;
+    --red: #e84040;
+    --green: #3ecf8e;
+    --amber: #f5a623;
+    --blue: #4a9eff;
+    --gap: 3px;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  #app {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 52px 1fr 330px;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+    padding: var(--gap);
+  }
+
+  /* HEADER */
+  #header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+  }
+
+  #logo-wrap { display: flex; align-items: center; gap: 12px; }
+  #logo-wrap img { height: 28px; object-fit: contain; }
+  #logo-label { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+  #clock-wrap { text-align: right; line-height: 1; }
+  #clock { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; color: var(--text); letter-spacing: 0.04em; }
+  #date-str { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* PANELS */
+  .panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  .panel-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 12px;
+    background: var(--surface2);
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+    font-size: 11px; font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot-red   { background: var(--red);   animation: blink 1.6s infinite; }
+  .dot-blue  { background: var(--blue); }
+  .dot-amber { background: var(--amber); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  .panel iframe { flex: 1; width: 100%; border: none; display: block; }
+
+  /* LIVE PANEL */
+  #live-panel { grid-column: 1; grid-row: 2; overflow: hidden; }
+
+  #live-ratio {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    flex: 1;
+  }
+
+  #live-ratio #live-loading,
+  #live-ratio #live-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  #live-loading {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface); z-index: 1; pointer-events: none;
+    flex-direction: column; gap: 10px;
+  }
+  .spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid var(--border2); border-top-color: var(--red);
+    animation: spin .9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #live-loading p { font-size: 11px; color: var(--muted); }
+
+  /* RADAR PANEL */
+  #radar-panel { grid-column: 2; grid-row: 2 / 4; }
+
+  #radar-inner {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; padding: 0;
+  }
+  #radar-inner p { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; max-width: 280px; }
+
+  .ext-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px;
+    background: #1a2030; border: 0.5px solid var(--blue);
+    color: var(--blue); border-radius: 7px;
+    font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
+    cursor: pointer; text-decoration: none; transition: background .15s;
+  }
+  .ext-btn:hover { background: #1f2a40; }
+  .alt-link { font-size: 10px; color: var(--muted2); }
+  .alt-link a { color: var(--blue); text-decoration: none; }
+
+  /* FOOTER */
+  #footer {
+    grid-column: 1; grid-row: 3 / 4;
+    display: flex;
+  }
+
+  /* STATUS PANEL */
+  #status-panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; flex-direction: column;
+    gap: 7px; justify-content: space-between;
+  }
+
+  #status-title { font-size: 13px; font-weight: 600; color: var(--red); }
+  #status-sub   { font-size: 10px; color: var(--muted2); margin-top: 1px; }
+  #video-title-display {
+    font-size: 10px; color: var(--muted); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px;
+  }
+
+  .srow { display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+  .srow-label { color: var(--muted); }
+  .srow-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text); }
+
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+  .pill-green { background: rgba(62,207,142,.12); color: var(--green); }
+  .pill-amber { background: rgba(245,166,35,.12); color: var(--amber); }
+
+  #refresh-btn {
+    width: 100%; padding: 7px;
+    background: var(--surface2); border: 0.5px solid var(--border2);
+    border-radius: 7px; color: var(--muted);
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
+    cursor: pointer; letter-spacing: .04em; text-transform: uppercase;
+    transition: color .15s;
+  }
+  #refresh-btn:hover { color: var(--text); }
+
+  /* HOWTO OVERLAY */
+  #howto {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,12,14,.97); z-index: 100;
+    align-items: center; justify-content: center; padding: 40px;
+  }
+  #howto-box {
+    max-width: 560px; background: var(--surface);
+    border: 0.5px solid var(--border2); border-radius: 14px;
+    padding: 32px 36px; line-height: 1.7;
+  }
+  #howto-box h2 { font-size: 17px; font-weight: 600; color: var(--amber); margin-bottom: 12px; }
+  #howto-box p  { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  #howto-box pre {
+    background: #0d0f11; border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 12px 14px;
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--green);
+    margin-bottom: 12px; white-space: pre-wrap; word-break: break-all;
+  }
+  #howto-box ul { font-size: 12px; color: var(--muted); padding-left: 18px; margin-bottom: 16px; }
+  #howto-box ul li { margin-bottom: 4px; }
+  #howto-close {
+    width: 100%; padding: 9px;
+    background: var(--red); border: none; border-radius: 8px;
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  #howto-close:hover { background: #c93535; }
+</style>
+</head>
+<body>
+
+<div id="howto">
+  <div id="howto-box">
+    <h2>⚠️ Abre com servidor local (só 1 vez)</h2>
+    <p>Os vídeos do YouTube precisam de correr num servidor HTTP — não funcionam com <code style="color:var(--amber)">file://</code>.</p>
+    <p><strong style="color:var(--text)">Opção A — Python (recomendado):</strong></p>
+    <pre>cd pasta\do\ficheiro
+python -m http.server 8080</pre>
+    <p>Depois abre: <strong style="color:var(--blue)">http://localhost:8080/lpma_signage_dashboard.html</strong></p>
+    <p><strong style="color:var(--text)">Opção B — VS Code:</strong> botão direito no ficheiro → "Open with Live Server"</p>
+    <ul>
+      <li>Preme <strong style="color:var(--text)">F</strong> para fullscreen</li>
+      <li>Preme <strong style="color:var(--text)">R</strong> para forçar actualização da live</li>
+      <li>A actualização automática acontece todos os dias às 08:00</li>
+    </ul>
+    <button id="howto-close" onclick="document.getElementById('howto').style.display='none'">Entendido — fechar</button>
+  </div>
+</div>
+
+<div id="app">
+
+  <div id="header">
+    <div id="logo-wrap">
+      <img src="https://www.dmcmadeira.pt/assets/logos/header-logo-dmcmadeira-nomargin-mobile.svg" alt="DMC Madeira"
+           onerror="this.style.display='none'">
+    </div>
+    <div id="clock-wrap">
+      <div id="clock">--:--:--</div>
+      <div id="date-str">--</div>
+    </div>
+  </div>
+
+  <div class="panel" id="live-panel">
+    <div id="live-ratio">
+      <div id="live-loading">
+        <div class="spinner"></div>
+        <p>A detectar vídeo mais recente via RSS...</p>
+      </div>
+      <iframe id="live-iframe"
+        src="about:blank"
+        allow="autoplay; encrypted-media; fullscreen"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <div class="panel" id="radar-panel">
+    <iframe src="https://embed.windy.com/embed2.html?lat=32.698&lon=-16.778&detailLat=32.698&detailLon=-16.778&width=650&height=450&zoom=10&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+  </div>
+
+  <div id="footer">
+
+    <div class="panel" id="video-panel" style="flex:1">
+      <iframe
+        src="https://www.youtube.com/embed/a9uoa-Q97zw?autoplay=1&mute=1&loop=1&playlist=a9uoa-Q97zw&rel=0&modestbranding=1"
+        allow="autoplay; encrypted-media; fullscreen"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <div id="status-panel" style="display:none"></div>
+
+  </div>
+</div>
+
+<script>
+  const CHANNEL_ID = 'UCvKCppxAkahRNm1EFusflgw';
+
+  if (location.protocol === 'file:') {
+    document.getElementById('howto').style.display = 'flex';
+  }
+
+  const DAYS   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function updateClock() {
+    const n = new Date();
+    document.getElementById('clock').textContent    = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+    document.getElementById('date-str').textContent = DAYS[n.getDay()]+', '+n.getDate()+' de '+MONTHS[n.getMonth()]+' de '+n.getFullYear();
+    if (n.getHours()===8 && n.getMinutes()===0 && n.getSeconds()===0) loadLatestVideo();
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function showLoading() {
+    document.getElementById('live-loading').style.display = 'flex';
+    document.getElementById('live-iframe').src = 'about:blank';
+  }
+
+  function setVideo(videoId) {
+    const src = 'https://www.youtube.com/embed/' + videoId
+              + '?autoplay=1&mute=1&rel=0&modestbranding=1';
+    const iframe = document.getElementById('live-iframe');
+    iframe.onload = function() {
+      document.getElementById('live-loading').style.display = 'none';
+    };
+    iframe.src = src;
+  }
+
+  function setFallback() {
+    const src = 'https://www.youtube.com/embed/live_stream?channel='+CHANNEL_ID+'&autoplay=1&mute=1';
+    document.getElementById('live-iframe').src = src;
+    document.getElementById('live-loading').style.display = 'none';
+  }
+
+  function extractVideoId(url) {
+    const m = url.match(/[?&]v=([^&]+)/) || url.match(/youtu\.be\/([^?]+)/);
+    return m ? m[1] : null;
+  }
+
+  function loadLatestVideo() {
+    showLoading();
+    const rssFeed = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + CHANNEL_ID;
+    const apiUrl  = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssFeed);
+
+    fetch(apiUrl)
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data.items || !data.items.length) throw new Error('feed vazio');
+        const latest  = data.items[0];
+        const videoId = extractVideoId(latest.link);
+        if (!videoId) throw new Error('ID não encontrado');
+        setVideo(videoId);
+      })
+      .catch(function(err){
+        console.warn('RSS falhou, fallback live_stream:', err);
+        setFallback();
+      });
+  }
+
+  function loadFR24() {
+    const panel = document.getElementById('radar-inner');
+    panel.style.padding = '0';
+    panel.innerHTML = '<iframe src="https://www.flightradar24.com/simple?lat=32.698&lon=-16.778&z=10" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
+  }
+
+  document.addEventListener('keydown', function(e){
+    if (e.key==='f'||e.key==='F'){
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    if (e.key==='r'||e.key==='R') loadLatestVideo();
+  });
+
+  loadLatestVideo();
+</script>
+</body>
+</html>
