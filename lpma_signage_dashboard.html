@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DMC Madeira — Ecrã Receção</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
@@ -112,44 +110,8 @@
   /* LIVE PANEL */
   #live-panel { grid-column: 1; grid-row: 2; overflow: hidden; }
 
-  #live-ratio {
-    position: relative;
-    width: 100%;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  #live-ratio #live-loading {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-
-  #live-ratio #live-iframe {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 177.78vh;
-    height: 100vh;
-    min-width: 100%;
-    min-height: 56.25vw;
-    transform: translate(-50%, -50%);
-    border: none;
-  }
-
-  #live-loading {
-    display: flex; align-items: center; justify-content: center;
-    background: var(--surface); z-index: 1; pointer-events: none;
-    flex-direction: column; gap: 10px;
-  }
-  .spinner {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 2px solid var(--border2); border-top-color: var(--red);
-    animation: spin .9s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #live-loading p { font-size: 11px; color: var(--muted); }
+  #player-left, #player-right { position: absolute; top: 50%; left: 50%; width: 177.78vh; height: 100vh; min-width: 100%; min-height: 56.25vw; transform: translate(-50%, -50%); }
+  #player-left iframe, #player-right iframe { width: 100% !important; height: 100% !important; }
 
   /* RADAR PANEL */
   #radar-panel { grid-column: 2; grid-row: 3; }
@@ -157,92 +119,11 @@
   /* VIDEO RIGHT PANEL */
   #video-right-panel { grid-column: 2; grid-row: 2; }
 
-  #radar-inner {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 4px; padding: 0;
-  }
-  #radar-inner p { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; max-width: 280px; }
-
-  .ext-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 18px;
-    background: #1a2030; border: 0.5px solid var(--blue);
-    color: var(--blue); border-radius: 7px;
-    font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500;
-    cursor: pointer; text-decoration: none; transition: background .15s;
-  }
-  .ext-btn:hover { background: #1f2a40; }
-  .alt-link { font-size: 10px; color: var(--muted2); }
-  .alt-link a { color: var(--blue); text-decoration: none; }
-
   /* FOOTER */
   #footer {
     grid-column: 1; grid-row: 3;
     display: flex;
   }
-
-  /* STATUS PANEL */
-  #status-panel {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    display: flex; flex-direction: column;
-    gap: 7px; justify-content: space-between;
-  }
-
-  #status-title { font-size: 13px; font-weight: 600; color: var(--red); }
-  #status-sub   { font-size: 10px; color: var(--muted2); margin-top: 1px; }
-  #video-title-display {
-    font-size: 10px; color: var(--muted); margin-top: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px;
-  }
-
-  .srow { display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
-  .srow-label { color: var(--muted); }
-  .srow-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text); }
-
-  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
-  .pill-green { background: rgba(62,207,142,.12); color: var(--green); }
-  .pill-amber { background: rgba(245,166,35,.12); color: var(--amber); }
-
-  #refresh-btn {
-    width: 100%; padding: 7px;
-    background: var(--surface2); border: 0.5px solid var(--border2);
-    border-radius: 7px; color: var(--muted);
-    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 500;
-    cursor: pointer; letter-spacing: .04em; text-transform: uppercase;
-    transition: color .15s;
-  }
-  #refresh-btn:hover { color: var(--text); }
-
-  /* FLIGHT MAP */
-  #flight-map {
-    width: 100%; height: 100%;
-    background: #0d1117;
-  }
-  .leaflet-container { background: #0d1117; }
-  .flight-icon { font-size: 18px; line-height: 1; }
-  .flight-popup {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: #e8eaec;
-    background: #111416;
-    border: 0.5px solid #2d3235;
-    border-radius: 6px;
-    padding: 6px 10px;
-    line-height: 1.6;
-  }
-  .leaflet-popup-content-wrapper {
-    background: #111416 !important;
-    border: 0.5px solid #2d3235 !important;
-    border-radius: 6px !important;
-    box-shadow: none !important;
-    color: #e8eaec !important;
-  }
-  .leaflet-popup-tip { background: #111416 !important; }
-  .leaflet-popup-close-button { color: #6b7278 !important; }
 
   /* HOWTO OVERLAY */
   #howto {
@@ -307,26 +188,14 @@ python -m http.server 8080</pre>
   </div>
 
   <div class="panel" id="live-panel">
-    <div id="live-ratio">
-      <div id="live-loading">
-        <div class="spinner"></div>
-        <p>A detectar vídeo mais recente via RSS...</p>
-      </div>
-      <iframe id="live-iframe"
-        src="about:blank"
-        allow="autoplay; encrypted-media; fullscreen"
-        allowfullscreen>
-      </iframe>
+    <div class="video-fill">
+      <div id="player-left"></div>
     </div>
   </div>
 
   <div class="panel" id="video-right-panel">
     <div class="video-fill">
-      <iframe
-        src="https://www.youtube.com/embed/BuL1tgahkXM?autoplay=1&mute=1&loop=1&playlist=BuL1tgahkXM&rel=0&modestbranding=1"
-        allow="autoplay; encrypted-media; fullscreen"
-        allowfullscreen>
-      </iframe>
+      <div id="player-right"></div>
     </div>
   </div>
 
@@ -337,19 +206,83 @@ python -m http.server 8080</pre>
   <div id="footer">
 
     <div class="panel" id="flight-panel" style="flex:1; overflow:hidden;">
-      <div id="flight-map"></div>
+      <iframe
+        frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+        src="https://www.airnavradar.com/?widget=1&z=8&hideAirportCard=true&hideAirportWeather=true&airportCardRight=true&showLabels=true&showAirlineLogo=true&airport=FNC"
+        style="width:100%;height:100%;border:none;">
+      </iframe>
     </div>
-
-    <div id="status-panel" style="display:none"></div>
 
   </div>
 </div>
 
 <script>
-  const CHANNEL_ID = 'UCvKCppxAkahRNm1EFusflgw';
+  const CHANNEL_ID  = 'UCNtxVRy0Nv0U5weQ7PDbgAw';
+  const FALLBACK_LEFT  = 'a9uoa-Q97zw';
+  const FALLBACK_RIGHT = 'BuL1tgahkXM';
+  const ROTATE_MS = 3 * 60 * 60 * 1000; // 3 horas
+
+  var videoList = [];
+  var idxLeft  = 0; // índice ímpar (0, 2, 4...)
+  var idxRight = 1; // índice par  (1, 3, 5...)
 
   if (location.protocol === 'file:') {
     document.getElementById('howto').style.display = 'flex';
+  }
+
+  // YouTube IFrame API
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+
+  var playerLeft, playerRight;
+
+  function onYouTubeIframeAPIReady() {
+    playerLeft = new YT.Player('player-left', {
+      videoId: FALLBACK_LEFT,
+      playerVars: { autoplay: 1, mute: 1, rel: 0, modestbranding: 1, controls: 0 },
+    });
+    playerRight = new YT.Player('player-right', {
+      videoId: FALLBACK_RIGHT,
+      playerVars: { autoplay: 1, mute: 1, rel: 0, modestbranding: 1, controls: 0 },
+    });
+    fetchAndLoad();
+    setInterval(rotate, ROTATE_MS);
+  }
+
+  function fetchAndLoad() {
+    var url = 'https://api.rss2json.com/v1/api.json?rss_url=' +
+      encodeURIComponent('https://www.youtube.com/feeds/videos.xml?channel_id=' + CHANNEL_ID);
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.items || data.items.length < 2) return;
+        videoList = data.items.map(function(item) {
+          var m = item.link.match(/[?&]v=([^&]+)/);
+          return m ? m[1] : null;
+        }).filter(Boolean);
+        idxLeft  = 0;
+        idxRight = 1;
+        loadPlayers();
+      })
+      .catch(function() {});
+  }
+
+  function loadPlayers() {
+    if (videoList.length === 0) return;
+    var vLeft  = videoList[idxLeft  % videoList.length] || FALLBACK_LEFT;
+    var vRight = videoList[idxRight % videoList.length] || FALLBACK_RIGHT;
+    if (playerLeft  && playerLeft.loadVideoById)  playerLeft.loadVideoById(vLeft);
+    if (playerRight && playerRight.loadVideoById) playerRight.loadVideoById(vRight);
+  }
+
+  function rotate() {
+    if (videoList.length < 2) { fetchAndLoad(); return; }
+    idxLeft  = (idxLeft  + 2) % videoList.length;
+    idxRight = (idxRight + 2) % videoList.length;
+    // Garante que nunca mostram o mesmo vídeo
+    if (idxLeft === idxRight) idxRight = (idxRight + 1) % videoList.length;
+    loadPlayers();
   }
 
   const DAYS   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
@@ -360,135 +293,17 @@ python -m http.server 8080</pre>
     const n = new Date();
     document.getElementById('clock').textContent    = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
     document.getElementById('date-str').textContent = DAYS[n.getDay()]+', '+n.getDate()+' de '+MONTHS[n.getMonth()]+' de '+n.getFullYear();
-    if (n.getHours()===8 && n.getMinutes()===0 && n.getSeconds()===0) loadLatestVideo();
   }
   setInterval(updateClock, 1000);
   updateClock();
-
-  function showLoading() {
-    document.getElementById('live-loading').style.display = 'flex';
-    document.getElementById('live-iframe').src = 'about:blank';
-  }
-
-  function setVideo(videoId) {
-    const src = 'https://www.youtube.com/embed/' + videoId
-              + '?autoplay=1&mute=1&rel=0&modestbranding=1';
-    const iframe = document.getElementById('live-iframe');
-    iframe.onload = function() {
-      document.getElementById('live-loading').style.display = 'none';
-    };
-    iframe.src = src;
-  }
-
-  function setFallback() {
-    const src = 'https://www.youtube.com/embed/live_stream?channel='+CHANNEL_ID+'&autoplay=1&mute=1';
-    document.getElementById('live-iframe').src = src;
-    document.getElementById('live-loading').style.display = 'none';
-  }
-
-  function extractVideoId(url) {
-    const m = url.match(/[?&]v=([^&]+)/) || url.match(/youtu\.be\/([^?]+)/);
-    return m ? m[1] : null;
-  }
-
-  function loadLatestVideo() {
-    showLoading();
-    const rssFeed = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + CHANNEL_ID;
-    const apiUrl  = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssFeed);
-
-    fetch(apiUrl)
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if (!data.items || !data.items.length) throw new Error('feed vazio');
-        const latest  = data.items[0];
-        const videoId = extractVideoId(latest.link);
-        if (!videoId) throw new Error('ID não encontrado');
-        setVideo(videoId);
-      })
-      .catch(function(err){
-        console.warn('RSS falhou, fallback live_stream:', err);
-        setFallback();
-      });
-  }
-
-  function loadFR24() {
-    const panel = document.getElementById('radar-inner');
-    panel.style.padding = '0';
-    panel.innerHTML = '<iframe src="https://www.flightradar24.com/simple?lat=32.698&lon=-16.778&z=10" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
-  }
 
   document.addEventListener('keydown', function(e){
     if (e.key==='f'||e.key==='F'){
       if (!document.fullscreenElement) document.documentElement.requestFullscreen();
       else document.exitFullscreen();
     }
-    if (e.key==='r'||e.key==='R') loadLatestVideo();
   });
 
-  loadLatestVideo();
-
-  // FLIGHT MAP
-  var flightMap = L.map('flight-map', { zoomControl: false, attributionControl: false })
-    .setView([32.698, -16.778], 8);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 14
-  }).addTo(flightMap);
-
-  // Marcador do aeroporto FNC
-  L.circleMarker([32.6941, -16.7781], {
-    radius: 6, color: '#f5a623', fillColor: '#f5a623', fillOpacity: 0.9, weight: 2
-  }).bindTooltip('FNC — Aeroporto da Madeira', { permanent: false, className: 'flight-popup' })
-    .addTo(flightMap);
-
-  var planeMarkers = {};
-
-  function getPlaneIcon(track) {
-    var el = document.createElement('div');
-    el.className = 'flight-icon';
-    el.style.transform = 'rotate(' + (track || 0) + 'deg)';
-    el.innerHTML = '✈';
-    return L.divIcon({ html: el, className: '', iconSize: [22, 22], iconAnchor: [11, 11] });
-  }
-
-  function fetchFlights() {
-    // OpenSky Network — CORS aberto, bounding box à volta da Madeira
-    var url = 'https://opensky-network.org/api/states/all?lamin=32.2&lomin=-17.4&lamax=33.2&lomax=-16.1';
-    fetch(url)
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var active = {};
-        var states = data.states || [];
-        states.forEach(function(s) {
-          var icao = s[0], callsign = (s[1] || icao).trim();
-          var lon = s[5], lat = s[6], alt = s[7], track = s[10], speed = s[9];
-          if (!lat || !lon) return;
-          active[icao] = true;
-          var popup = '<b>' + callsign + '</b><br>'
-            + 'Alt: ' + (alt ? Math.round(alt) + ' m' : '—') + '<br>'
-            + 'Vel: ' + (speed ? Math.round(speed * 3.6) + ' km/h' : '—');
-          if (planeMarkers[icao]) {
-            planeMarkers[icao].setLatLng([lat, lon]);
-            planeMarkers[icao].setIcon(getPlaneIcon(track));
-            planeMarkers[icao].getPopup().setContent(popup);
-          } else {
-            planeMarkers[icao] = L.marker([lat, lon], { icon: getPlaneIcon(track) })
-              .bindPopup(popup, { className: 'flight-popup' })
-              .addTo(flightMap);
-          }
-        });
-        Object.keys(planeMarkers).forEach(function(icao) {
-          if (!active[icao]) {
-            flightMap.removeLayer(planeMarkers[icao]);
-            delete planeMarkers[icao];
-          }
-        });
-      })
-      .catch(function(e) { console.warn('OpenSky falhou:', e); });
-  }
-
-  fetchFlights();
-  setInterval(fetchFlights, 15000);
 </script>
 </body>
 </html>
