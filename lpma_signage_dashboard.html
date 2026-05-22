@@ -452,22 +452,21 @@ python -m http.server 8080</pre>
   }
 
   function fetchFlights() {
-    var url = 'https://api.adsb.lol/v2/lat/32.698/lon/-16.778/dist/150';
+    // OpenSky Network — CORS aberto, bounding box à volta da Madeira
+    var url = 'https://opensky-network.org/api/states/all?lamin=32.2&lomin=-17.4&lamax=33.2&lomax=-16.1';
     fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        console.log('ADSB data:', data);
         var active = {};
-        var aircraft = data.ac || [];
-        console.log('Total aviões recebidos:', aircraft.length);
-        aircraft.forEach(function(s) {
-          var icao = s.hex, callsign = (s.flight || s.r || icao).trim();
-          var lat = s.lat, lon = s.lon, alt = s.alt_baro, track = s.track, speed = s.gs;
+        var states = data.states || [];
+        states.forEach(function(s) {
+          var icao = s[0], callsign = (s[1] || icao).trim();
+          var lon = s[5], lat = s[6], alt = s[7], track = s[10], speed = s[9];
           if (!lat || !lon) return;
           active[icao] = true;
           var popup = '<b>' + callsign + '</b><br>'
-            + 'Alt: ' + (alt ? Math.round(typeof alt === 'number' ? alt * 0.3048 : 0) + ' m' : '—') + '<br>'
-            + 'Vel: ' + (speed ? Math.round(speed * 1.852) + ' km/h' : '—');
+            + 'Alt: ' + (alt ? Math.round(alt) + ' m' : '—') + '<br>'
+            + 'Vel: ' + (speed ? Math.round(speed * 3.6) + ' km/h' : '—');
           if (planeMarkers[icao]) {
             planeMarkers[icao].setLatLng([lat, lon]);
             planeMarkers[icao].setIcon(getPlaneIcon(track));
@@ -478,7 +477,6 @@ python -m http.server 8080</pre>
               .addTo(flightMap);
           }
         });
-        // Remove aviões que já saíram
         Object.keys(planeMarkers).forEach(function(icao) {
           if (!active[icao]) {
             flightMap.removeLayer(planeMarkers[icao]);
@@ -486,7 +484,7 @@ python -m http.server 8080</pre>
           }
         });
       })
-      .catch(function(e) { console.warn('ADSB.lol falhou:', e); });
+      .catch(function(e) { console.warn('OpenSky falhou:', e); });
   }
 
   fetchFlights();
