@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DMC Madeira — Ecrã Receção</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 
@@ -215,6 +217,33 @@
   }
   #refresh-btn:hover { color: var(--text); }
 
+  /* FLIGHT MAP */
+  #flight-map {
+    width: 100%; height: 100%;
+    background: #0d1117;
+  }
+  .leaflet-container { background: #0d1117; }
+  .flight-icon { font-size: 18px; line-height: 1; }
+  .flight-popup {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #e8eaec;
+    background: #111416;
+    border: 0.5px solid #2d3235;
+    border-radius: 6px;
+    padding: 6px 10px;
+    line-height: 1.6;
+  }
+  .leaflet-popup-content-wrapper {
+    background: #111416 !important;
+    border: 0.5px solid #2d3235 !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    color: #e8eaec !important;
+  }
+  .leaflet-popup-tip { background: #111416 !important; }
+  .leaflet-popup-close-button { color: #6b7278 !important; }
+
   /* HOWTO OVERLAY */
   #howto {
     display: none; position: fixed; inset: 0;
@@ -307,14 +336,8 @@ python -m http.server 8080</pre>
 
   <div id="footer">
 
-    <div class="panel" id="video-panel" style="flex:1">
-      <div class="video-fill">
-        <iframe
-          src="https://www.youtube.com/embed/a9uoa-Q97zw?autoplay=1&mute=1&loop=1&playlist=a9uoa-Q97zw&rel=0&modestbranding=1"
-          allow="autoplay; encrypted-media; fullscreen"
-          allowfullscreen>
-        </iframe>
-      </div>
+    <div class="panel" id="flight-panel" style="flex:1; overflow:hidden;">
+      <div id="flight-map"></div>
     </div>
 
     <div id="status-panel" style="display:none"></div>
@@ -403,6 +426,71 @@ python -m http.server 8080</pre>
   });
 
   loadLatestVideo();
+
+  // FLIGHT MAP
+  var flightMap = L.map('flight-map', { zoomControl: false, attributionControl: false })
+    .setView([32.698, -16.778], 8);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 14
+  }).addTo(flightMap);
+
+  // Marcador do aeroporto FNC
+  L.circleMarker([32.6941, -16.7781], {
+    radius: 6, color: '#f5a623', fillColor: '#f5a623', fillOpacity: 0.9, weight: 2
+  }).bindTooltip('FNC — Aeroporto da Madeira', { permanent: false, className: 'flight-popup' })
+    .addTo(flightMap);
+
+  var planeMarkers = {};
+
+  function getPlaneIcon(track) {
+    var el = document.createElement('div');
+    el.className = 'flight-icon';
+    el.style.transform = 'rotate(' + (track || 0) + 'deg)';
+    el.innerHTML = '✈';
+    return L.divIcon({ html: el, className: '', iconSize: [22, 22], iconAnchor: [11, 11] });
+  }
+
+  function fetchFlights() {
+    var url = 'https://api.adsb.lol/v2/lat/32.698/lon/-16.778/dist/150';
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        console.log('ADSB data:', data);
+        var active = {};
+        var aircraft = data.ac || [];
+        console.log('Total aviões recebidos:', aircraft.length);
+        aircraft.forEach(function(s) {
+          var icao = s.hex, callsign = (s.flight || s.r || icao).trim();
+          var lat = s.lat, lon = s.lon, alt = s.alt_baro, track = s.track, speed = s.gs;
+          if (!lat || !lon) return;
+          active[icao] = true;
+          var popup = '<b>' + callsign + '</b><br>'
+            + 'Alt: ' + (alt ? Math.round(typeof alt === 'number' ? alt * 0.3048 : 0) + ' m' : '—') + '<br>'
+            + 'Vel: ' + (speed ? Math.round(speed * 1.852) + ' km/h' : '—');
+          if (planeMarkers[icao]) {
+            planeMarkers[icao].setLatLng([lat, lon]);
+            planeMarkers[icao].setIcon(getPlaneIcon(track));
+            planeMarkers[icao].getPopup().setContent(popup);
+          } else {
+            planeMarkers[icao] = L.marker([lat, lon], { icon: getPlaneIcon(track) })
+              .bindPopup(popup, { className: 'flight-popup' })
+              .addTo(flightMap);
+          }
+        });
+        // Remove aviões que já saíram
+        Object.keys(planeMarkers).forEach(function(icao) {
+          if (!active[icao]) {
+            flightMap.removeLayer(planeMarkers[icao]);
+            delete planeMarkers[icao];
+          }
+        });
+      })
+      .catch(function(e) { console.warn('ADSB.lol falhou:', e); });
+  }
+
+  fetchFlights();
+  setInterval(fetchFlights, 15000);
 </script>
 </body>
 </html>
