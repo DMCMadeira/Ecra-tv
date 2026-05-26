@@ -272,10 +272,19 @@ python -m http.server 8080</pre>
   const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   function pad(n){ return String(n).padStart(2,'0'); }
 
+  function refreshEmbeds() {
+    ['radar-panel', 'flight-panel'].forEach(function(id) {
+      var iframe = document.querySelector('#' + id + ' iframe');
+      if (iframe) { var src = iframe.src; iframe.src = ''; iframe.src = src; }
+    });
+  }
+
   function updateClock() {
     const n = new Date();
     document.getElementById('clock').textContent    = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
     document.getElementById('date-str').textContent = DAYS[n.getDay()]+', '+n.getDate()+' de '+MONTHS[n.getMonth()]+' de '+n.getFullYear();
+    const h = n.getHours(), m = n.getMinutes(), s = n.getSeconds();
+    if (s === 0 && ((h === 8 && m === 50) || (h === 14 && m === 0))) refreshEmbeds();
   }
   setInterval(updateClock, 1000);
   updateClock();
