@@ -80,32 +80,21 @@
     overflow: hidden;
     min-height: 0;
   }
-  .video-fill iframe {
-    position: absolute;
-    top: -30%; left: -30%;
-    width: 160%;
-    height: 160%;
-    border: none;
-    pointer-events: none;
-  }
+  /* LIVE PANEL — ocupa a linha inteira (a TV só descodifica 1 vídeo de cada vez) */
+  #live-panel { grid-column: 1 / -1; grid-row: 2; overflow: hidden; }
 
-  /* LIVE PANEL */
-  #live-panel { grid-column: 1; grid-row: 2; overflow: hidden; }
-
-  #player-left, #player-right {
+  /* Cover 16:9 sem unidades de viewport (que davam problemas no browser da TV):
+     o iframe é dimensionado por JS em resizePlayer() para cobrir sempre o painel. */
+  #player-left {
     position: absolute !important;
-    top: -30% !important; left: -30% !important;
-    width: 160% !important;
-    height: 160% !important;
+    top: 50% !important; left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     border: none !important;
     pointer-events: none;
   }
 
   /* RADAR PANEL */
   #radar-panel { grid-column: 2; grid-row: 3; }
-
-  /* VIDEO RIGHT PANEL */
-  #video-right-panel { grid-column: 2; grid-row: 2; }
 
   /* FOOTER */
   #footer {
@@ -151,11 +140,11 @@
     <p><strong style="color:var(--text)">Opção A — Python (recomendado):</strong></p>
     <pre>cd pasta\do\ficheiro
 python -m http.server 8080</pre>
-    <p>Depois abre: <strong style="color:var(--blue)">http://localhost:8080/lpma_signage_dashboard.html</strong></p>
+    <p>Depois abre: <strong style="color:var(--blue)">http://localhost:8080/overview_dashboard.html</strong></p>
     <p><strong style="color:var(--text)">Opção B — VS Code:</strong> botão direito no ficheiro → "Open with Live Server"</p>
     <ul>
       <li>Preme <strong style="color:var(--text)">F</strong> para fullscreen</li>
-      <li>Os vídeos rodam automaticamente de 3 em 3 horas</li>
+      <li>O vídeo roda automaticamente de 3 em 3 horas</li>
     </ul>
     <button id="howto-close" onclick="document.getElementById('howto').style.display='none'">Entendido — fechar</button>
   </div>
@@ -180,12 +169,6 @@ python -m http.server 8080</pre>
     </div>
   </div>
 
-  <div class="panel" id="video-right-panel">
-    <div class="video-fill">
-      <div id="player-right"></div>
-    </div>
-  </div>
-
   <div class="panel" id="radar-panel">
     <iframe src="https://embed.windy.com/embed2.html?lat=32.698&lon=-16.778&detailLat=32.698&detailLon=-16.778&width=650&height=450&zoom=10&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
   </div>
@@ -204,14 +187,12 @@ python -m http.server 8080</pre>
 </div>
 
 <script>
-  const CHANNEL_ID  = 'UCNtxVRy0Nv0U5weQ7PDbgAw';
-  const FALLBACK_LEFT  = 'a9uoa-Q97zw';
-  const FALLBACK_RIGHT = 'BuL1tgahkXM';
+  const CHANNEL_ID = 'UCNtxVRy0Nv0U5weQ7PDbgAw';
+  const FALLBACK_VIDEO = 'a9uoa-Q97zw';
   const ROTATE_MS = 3 * 60 * 60 * 1000; // 3 horas
 
   var videoList = [];
-  var idxLeft  = 0; // índice ímpar (0, 2, 4...)
-  var idxRight = 1; // índice par  (1, 3, 5...)
+  var idx = 0;
 
   if (location.protocol === 'file:') {
     document.getElementById('howto').style.display = 'flex';
@@ -222,24 +203,40 @@ python -m http.server 8080</pre>
   tag.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(tag);
 
-  var playerLeft, playerRight;
+  var player;
+
+  // Dimensiona o iframe do vídeo em pixels para cobrir todo o painel (efeito "cover"),
+  // mantendo a proporção 16:9. Feito em JS porque o browser da TV não lida bem com
+  // as técnicas de cover em CSS puro (vh/vw ou aspect-ratio).
+  function resizePlayer() {
+    var box = document.querySelector('#live-panel .video-fill');
+    var iframe = document.getElementById('player-left');
+    if (!box || !iframe) return;
+
+    var w = box.clientWidth;
+    var h = box.clientHeight;
+    if (!w || !h) return;
+
+    if (w / h > 16 / 9) {
+      iframe.style.width  = w + 'px';
+      iframe.style.height = Math.ceil(w * 9 / 16) + 'px';
+    } else {
+      iframe.style.height = h + 'px';
+      iframe.style.width  = Math.ceil(h * 16 / 9) + 'px';
+    }
+  }
 
   function onYouTubeIframeAPIReady() {
-    playerLeft = new YT.Player('player-left', {
-      width: '100%',
-      height: '100%',
-      videoId: FALLBACK_LEFT,
+    player = new YT.Player('player-left', {
+      videoId: FALLBACK_VIDEO,
       playerVars: { autoplay: 1, mute: 1, rel: 0, modestbranding: 1, controls: 0 },
-    });
-    playerRight = new YT.Player('player-right', {
-      width: '100%',
-      height: '100%',
-      videoId: FALLBACK_RIGHT,
-      playerVars: { autoplay: 1, mute: 1, rel: 0, modestbranding: 1, controls: 0 },
+      events: { onReady: resizePlayer },
     });
     fetchAndLoad();
     setInterval(rotate, ROTATE_MS);
   }
+
+  window.addEventListener('resize', resizePlayer);
 
   function fetchAndLoad() {
     var url = 'https://api.rss2json.com/v1/api.json?rss_url=' +
@@ -247,33 +244,27 @@ python -m http.server 8080</pre>
     fetch(url)
       .then(function(r) { return r.json(); })
       .then(function(data) {
-        if (!data.items || data.items.length < 2) return;
+        if (!data.items || !data.items.length) return;
         videoList = data.items.map(function(item) {
           var m = item.link.match(/[?&]v=([^&]+)/);
           return m ? m[1] : null;
         }).filter(Boolean);
-        idxLeft  = 0;
-        idxRight = 1;
-        loadPlayers();
+        idx = 0;
+        loadPlayer();
       })
       .catch(function() {});
   }
 
-  function loadPlayers() {
+  function loadPlayer() {
     if (videoList.length === 0) return;
-    var vLeft  = videoList[idxLeft  % videoList.length] || FALLBACK_LEFT;
-    var vRight = videoList[idxRight % videoList.length] || FALLBACK_RIGHT;
-    if (playerLeft  && playerLeft.loadVideoById)  playerLeft.loadVideoById(vLeft);
-    if (playerRight && playerRight.loadVideoById) playerRight.loadVideoById(vRight);
+    var videoId = videoList[idx % videoList.length] || FALLBACK_VIDEO;
+    if (player && player.loadVideoById) player.loadVideoById(videoId);
   }
 
   function rotate() {
-    if (videoList.length < 2) { fetchAndLoad(); return; }
-    idxLeft  = (idxLeft  + 2) % videoList.length;
-    idxRight = (idxRight + 2) % videoList.length;
-    // Garante que nunca mostram o mesmo vídeo
-    if (idxLeft === idxRight) idxRight = (idxRight + 1) % videoList.length;
-    loadPlayers();
+    if (videoList.length === 0) { fetchAndLoad(); return; }
+    idx = (idx + 1) % videoList.length;
+    loadPlayer();
   }
 
   const DAYS   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
